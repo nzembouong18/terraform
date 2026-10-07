@@ -1,0 +1,13 @@
+# Backend S3 de production (à copier dans backend.tf)
+# - Chiffrement + versioning du bucket obligatoires
+# - Verrouillage : use_lockfile = true (S3 natif, Terraform >= 1.10) ;
+#   l'ancienne méthode DynamoDB (dynamodb_table) est dépréciée.
+terraform {
+  backend "s3" {
+    bucket       = "mon-entreprise-tfstate"
+    key          = "prod/reseau/terraform.tfstate"
+    region       = "eu-west-3"
+    encrypt      = true
+    use_lockfile = true
+  }
+}

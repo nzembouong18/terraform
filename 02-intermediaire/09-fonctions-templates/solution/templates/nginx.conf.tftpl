@@ -1,0 +1,16 @@
+upstream app {
+%{ for ip in amonts ~}
+  server ${ip};
+%{ endfor ~}
+}
+
+server {
+%{ for p in ports ~}
+  listen ${p};
+%{ endfor ~}
+  server_name ${serveur};
+%{ if length(ports) > 1 ~}
+  # plusieurs ports exposés
+%{ endif ~}
+  location / { proxy_pass http://app; }
+}

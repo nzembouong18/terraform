@@ -1,0 +1,90 @@
+# Pipeline GitHub Actions d'un dépôt d'infrastructure (à copier dans .github/workflows/).
+# - PR     : fmt + validate + tflint + checkov + tests + plan (commenté dans la PR)
+# - main   : apply après approbation de l'environnement "production"
+# Authentification AWS par OIDC : AUCUNE clé longue durée stockée dans GitHub.
+name: terraform
+
+on:
+  pull_request:
+    paths: ["infra/**"]
+  push:
+    branches: [main]
+    paths: ["infra/**"]
+
+permissions:
+  id-token: write       # OIDC
+  contents: read
+  pull-requests: write  # commentaire du plan
+
+env:
+  TF_IN_AUTOMATION: "true"
+  TF_VERSION: "1.9.8"
+  WORKDIR: infra/envs/prod
+
+jobs:
+  qualite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      - run: terraform fmt -check -recursive
+        working-directory: infra
+      - run: terraform init -backend=false -input=false
+        working-directory: ${{ env.WORKDIR }}
+      - run: terraform validate
+        working-directory: ${{ env.WORKDIR }}
+      - uses: terraform-linters/setup-tflint@v4
+      - run: tflint --recursive
+        working-directory: infra
+      - uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: infra
+          framework: terraform
+
+  plan:
+    needs: qualite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/github-terraform-plan   # rôle LECTURE SEULE pour les PR
+          aws-region: eu-west-3
+      - run: terraform init -input=false
+        working-directory: ${{ env.WORKDIR }}
+      - run: terraform plan -input=false -lock-timeout=5m -out=tfplan
+        working-directory: ${{ env.WORKDIR }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: ${{ env.WORKDIR }}/tfplan
+
+  apply:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: plan
+    runs-on: ubuntu-latest
+    environment: production        # approbation manuelle requise
+    concurrency: terraform-prod    # jamais 2 apply en parallèle
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/github-terraform-apply
+          aws-region: eu-west-3
+      - uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: ${{ env.WORKDIR }}
+      - run: terraform init -input=false
+        working-directory: ${{ env.WORKDIR }}
+      # On applique EXACTEMENT le plan relu : pas de surprise entre plan et apply
+      - run: terraform apply -input=false tfplan
+        working-directory: ${{ env.WORKDIR }}
