@@ -29,8 +29,13 @@ CLOUD=(
   05-projet-final/envs/prod
   05-projet-final/modules/reseau
   05-projet-final/modules/application
+  06-complements/19-azure/solution
+  06-complements/20-gcp/solution
+  06-complements/21-kubernetes/solution
 )
 WITH_TESTS=(
+  06-complements/19-azure/solution
+  06-complements/20-gcp/solution
   03-avance/10-tests/solution
   04-expert/15-module-qualite/solution
   05-projet-final/modules/reseau
@@ -115,6 +120,21 @@ step "terraform test"
 for d in "${WITH_TESTS[@]}"; do
   (cd "$ROOT/$d" && terraform init -backend=false "${TF_FLAGS[@]}" >/dev/null && terraform test -no-color >/dev/null)
   ok "test  $d"
+done
+
+step "lab 22 : debug (les exercices doivent échouer, les solutions passer)"
+for n in 01 02 03 04 05 06; do
+  (
+    cd "$ROOT/06-complements/22-debug/exercices/$n"
+    if terraform init "${TF_FLAGS[@]}" >/dev/null 2>&1 && terraform plan "${TF_FLAGS[@]}" >/dev/null 2>&1; then
+      echo "L'exercice $n devrait échouer" >&2; exit 1
+    fi
+    rm -rf .terraform .terraform.lock.hcl
+    cd "$ROOT/06-complements/22-debug/solutions/$n"
+    terraform init "${TF_FLAGS[@]}" >/dev/null && terraform plan "${TF_FLAGS[@]}" >/dev/null
+    rm -rf .terraform .terraform.lock.hcl
+  )
+  ok "debug  $n"
 done
 
 if command -v opa >/dev/null; then

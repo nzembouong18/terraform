@@ -8,6 +8,7 @@
 | 🟡 2 Intermédiaire | boucles, modules, backends, environnements, fonctions | 9 h 30 | labs 05–09 + quiz niveau 2 |
 | 🟠 3 Avancé | tests, refactoring/import, CI/CD, sécurité | 8 h | labs 10–13 + quiz niveau 3 |
 | 🔴 4 Expert | multi-région, modules « registry », policies, architecture, providers | 12 h | labs 14–18 + quiz niveau 4 |
+| 🧩 Compléments | Azure, Google Cloud, Kubernetes/Helm, atelier de débogage | 9 h | labs 19–22 |
 | 🏁 Projet | plateforme AWS dev/prod complète | 15–20 h | dépôt + soutenance |
 
 ### Planning type (rythme mi-temps, 1 module par séance de 2–3 h)
@@ -21,8 +22,9 @@
 | 6 | 12, 13 |
 | 7 | 14, 15 |
 | 8 | 16, 17, 18 |
-| 9–10 | Projet final |
-| 11 | Révisions + [quiz](09-quiz.md) + [préparation certification](06-certification.md) |
+| 9 | 19, 20 (au choix selon votre cloud), 21, 22 |
+| 10–11 | Projet final |
+| 12 | Révisions + [quiz](09-quiz.md) + [préparation certification](06-certification.md) |
 
 ## Méthode pédagogique
 1. **Lire** le cours du module (15–30 min).

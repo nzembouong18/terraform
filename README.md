@@ -20,6 +20,7 @@ Installation détaillée : [docs/00-installation.md](docs/00-installation.md). L
 | 🟡 **2 Intermédiaire** | [`02-intermediaire`](02-intermediaire/README.md) | 05 Boucles · 06 Modules · 07 Backends/remote state · 08 Environnements · 09 Fonctions/templates | non |
 | 🟠 **3 Avancé** | [`03-avance`](03-avance/README.md) | 10 Tests · 11 Refactoring/import · 12 CI/CD · 13 Sécurité | non (12 : GitHub) |
 | 🔴 **4 Expert** | [`04-expert`](04-expert/README.md) | 14 Multi-région · 15 Module « production » · 16 Policy as code · 17 Architecture/échelle · 18 Écrire un provider | optionnel |
+| 🧩 **Compléments** | [`06-complements`](06-complements/README.md) | 19 Azure · 20 Google Cloud · 21 Kubernetes & Helm · 22 Atelier de débogage | optionnel (22 : non) |
 | 🏁 **Projet** | [`05-projet-final`](05-projet-final/README.md) | Plateforme web AWS dev/prod | oui (ou `validate`/tests mockés) |
 
 Chaque module = **cours + exercices + `solution/` exécutable**. Planning et grille d'auto-évaluation : [docs/01-parcours-et-evaluation.md](docs/01-parcours-et-evaluation.md).
@@ -53,6 +54,7 @@ La CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) exécute ce scrip
 .
 ├── 01-debutant/ … 04-expert/   # cours + labs (README.md + solution/)
 ├── 05-projet-final/            # capstone AWS (modules + envs)
+├── 06-complements/             # Azure, GCP, Kubernetes, atelier de débogage
 ├── docs/                       # documentation transverse
 ├── scripts/validate-all.sh     # validation de tous les labs
 └── .github/workflows/ci.yml    # CI du dépôt
