@@ -1,0 +1,22 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+*.tfplan
+tfplan
+# Secrets
+*.auto.tfvars.local
+secrets.tfvars
+# Sorties de labs
+**/out/
+**/generated/
+.DS_Store
+.terraform.lock.hcl

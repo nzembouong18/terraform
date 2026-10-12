@@ -1,0 +1,5 @@
+# Analyse statique de sécurité : checkov -d . --config-file .checkov.yaml
+framework:
+  - terraform
+soft-fail: false
+skip-check: []
