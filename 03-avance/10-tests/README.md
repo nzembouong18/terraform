@@ -88,7 +88,10 @@ run "creation_reelle" {
 run "verifie_la_sortie_precedente" {
   command = plan
   variables { nom = run.creation_reelle.nom_complet }   # un run peut consommer les sorties d'un run précédent
-  assert { condition = output.nom == "demo-logs"  error_message = "…" }
+  assert {
+    condition = output.nom == "demo-logs"
+    error_message = "…"
+  }
 }
 ```
 Ce qui est accessible dans une `assert` : variables, `locals`, outputs, attributs des ressources, `run.<nom>.<output>`. Avec `command = plan`, les valeurs **inconnues avant apply** (IDs) ne peuvent pas être testées.
@@ -156,11 +159,11 @@ Pour les tests d'intégration réels : **compte/projet dédié**, noms uniques (
 
 ## Exercices
 1. Lancez `terraform init && terraform test` dans `solution/`. Lisez les 3 fichiers de test.
-2. Cassez volontairement la logique (`p > 0 && p < 65535`) : quel test échoue ? Lisez le message.
+2. Cassez volontairement la logique : remplacez `p > 0` par `p >= 0` dans `main.tf`. Quel test échoue (`ports_invalides_sont_filtres`) ? Lisez le message, puis remettez le code. Pourquoi le test `nom_valide_produit_le_bon_chemin` reste-t-il vert ?
 3. Ajoutez un test `plan` vérifiant que `nom = "web"` produit `out/web.conf`.
 4. Ajoutez une validation sur `ports` (pas de doublons : `length(var.ports) == length(distinct(var.ports))`) **et** son test `expect_failures`.
 5. Appliquez la même méthode au module [`15-module-qualite`](../../04-expert/15-module-qualite/solution/tests/module.tftest.hcl) (provider AWS simulé).
-6. Défi : ajoutez à la CI un job `terraform test` (voir [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)).
+6. Défi : lisez [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) et [`scripts/validate-all.sh`](../../scripts/validate-all.sh) : où `terraform test` est-il exécuté ? Ajoutez un job séparé qui n'exécute que les tests (`terraform test -filter=tests/unitaires.tftest.hcl`).
 
 ## Corrigé
 [`solution/`](solution/) — `main.tf`, `tests/unitaires`, `integration`, `mock`.

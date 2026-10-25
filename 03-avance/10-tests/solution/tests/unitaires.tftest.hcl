@@ -34,3 +34,17 @@ run "nom_trop_court_est_rejete" {
 
   expect_failures = [var.nom]
 }
+
+# Les valeurs internes (locals) sont accessibles dans les assertions
+run "locals_accessibles" {
+  command = plan
+
+  variables {
+    ports = [22, 80, 99999]
+  }
+
+  assert {
+    condition     = length(local.ports_valides) == 2 && !contains(local.ports_valides, 99999)
+    error_message = "Les ports hors plage doivent être éliminés dans local.ports_valides."
+  }
+}

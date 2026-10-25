@@ -10,8 +10,16 @@
 
 ## Providers
 ```hcl
-provider "kubernetes" { config_path = "~/.kube/config"  config_context = "kind-formation" }
-provider "helm" { kubernetes { config_path = "~/.kube/config" } }
+provider "kubernetes" {
+  config_path = "~/.kube/config"
+  config_context = "kind-formation"
+}
+
+provider "helm" {
+  kubernetes {
+    config_path = "~/.kube/config"
+  }
+}
 ```
 En cloud : configurez via `host`, `cluster_ca_certificate` et un `exec` (jeton éphémère `aws eks get-token`, `kubelogin`, `gke-gcloud-auth-plugin`) plutôt qu'un jeton statique.
 

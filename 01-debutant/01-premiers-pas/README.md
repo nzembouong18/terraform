@@ -93,7 +93,7 @@ Lecture des symboles du plan :
 ### Le langage HCL en 5 minutes
 HCL (*HashiCorp Configuration Language*) est composé de **blocs**, d'**arguments** et d'**expressions**.
 
-```hcl
+```text
 # Commentaire sur une ligne          // également valide
 /* Commentaire
    multi-lignes */
@@ -172,7 +172,7 @@ Terraform **provisionne** (crée serveurs, réseaux, DNS…) ; Ansible/cloud-ini
 
 1. **Hello Terraform** — dans `exercice/main.tf`, déclarez `random_pet` et un `local_file` dont le contenu contient le nom généré. Lancez `init`, `plan`, `apply`. Ouvrez `out/bienvenue.txt`.
 2. **Lire le plan** — relancez `plan` : que dit-il ? (*No changes*). Puis changez `length = 3` : quels symboles voyez-vous ? Pourquoi `-/+` (*forces replacement*) ?
-3. **Dérive (drift)** — modifiez à la main `out/bienvenue.txt`, relancez `plan`. Que fait Terraform ? Appliquez.
+3. **Dérive (drift)** — modifiez à la main `out/bienvenue.txt`, relancez `plan`. Que fait Terraform ? (avec le provider `local`, il annonce que le fichier `will be created` : un contenu différent ne correspond plus à la ressource suivie.) Appliquez, puis recommencez en **supprimant** le fichier et en lançant `terraform plan -refresh-only` : que signifie « has been deleted » ?
 4. **Exploration** — `terraform show`, `terraform output`, `terraform state list`, `terraform graph | dot -Tpng > g.png` (si Graphviz).
 5. **Nettoyage** — `terraform destroy`. Le fichier a-t-il disparu ?
 

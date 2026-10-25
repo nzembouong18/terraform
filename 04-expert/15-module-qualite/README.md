@@ -15,7 +15,10 @@ Un bon module est un **produit** : API stable, sécurisé par défaut, testé, d
 
 ## Feature toggles & bonnes pratiques d'API
 ```hcl
-variable "versioning" { type = bool  default = true }
+variable "versioning" {
+  type = bool
+  default = true
+}
 resource "aws_s3_bucket_lifecycle_configuration" "versions" {
   count = var.versioning && var.retention_jours_versions > 0 ? 1 : 0
 }

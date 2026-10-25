@@ -4,9 +4,15 @@
 Plusieurs configurations d'un même provider (région, compte, cluster) :
 ```hcl
 provider "aws" { region = "eu-west-3" }                    # configuration par défaut
-provider "aws" { alias = "us"  region = "us-east-1" }      # configuration alias
+provider "aws" {      # configuration alias
+  alias = "us"
+  region = "us-east-1"
+}
 
-resource "aws_s3_bucket" "x" { provider = aws.us  bucket = "..." }
+resource "aws_s3_bucket" "x" {
+  provider = aws.us
+  bucket = "..."
+}
 ```
 
 ## Passer les providers à un module
@@ -18,7 +24,12 @@ module "donnees" {
 ```
 Le module doit **déclarer** les alias attendus :
 ```hcl
-required_providers { aws = { source = "hashicorp/aws"  configuration_aliases = [aws.replica] } }
+required_providers {
+  aws = {
+    source                = "hashicorp/aws"
+    configuration_aliases = [aws.replica]
+  }
+}
 ```
 
 ## Multi-compte
@@ -78,7 +89,7 @@ module "c" {
 Dans la forme 3, le module écrit `provider = aws.replica` sur ses ressources, sans savoir de quelle région il s'agit : c'est le parent qui décide. Cela rend le module **réutilisable dans n'importe quel couple de régions/comptes**.
 
 ### Configurer un provider à partir d'une autre ressource : le piège
-```hcl
+```text
 # ❌ À éviter dans le MÊME état
 resource "aws_eks_cluster" "c" { … }
 provider "kubernetes" {
@@ -127,7 +138,7 @@ provider "aws" {
 
 ## Exercices
 1. Lisez `solution/main.tf` et le module. `terraform init -backend=false && terraform validate`.
-2. Retirez `configuration_aliases` du module : quelle erreur ?
+2. Retirez `configuration_aliases` du module et relancez `terraform validate` : Terraform affiche l'avertissement `Reference to undefined provider`. Pourquoi est-ce un vrai problème de conception même si ce n'est « que » un avertissement (le module n'annonce plus ce qu'il attend) ?
 3. Ajoutez une 3ᵉ région (`ap`) avec un 2ᵉ bucket répliqué.
 4. Créez un module qui crée un certificat ACM dans `us-east-1` (obligatoire pour CloudFront) tout en étant appelé depuis une stack `eu-west-3`.
 5. Défi : passez la config à un rôle `assume_role` dans un 2ᵉ compte.

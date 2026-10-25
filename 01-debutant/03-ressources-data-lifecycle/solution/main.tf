@@ -46,10 +46,18 @@ data "local_file" "readme_lu" {
   depends_on = [local_file.readme]
 }
 
-# 5. ignore_changes : tolérer une modification faite hors Terraform
+# 5. ignore_changes : ignorer les changements de CONFIGURATION d'un attribut
+#    (ex. une valeur ensuite pilotée par un autre outil). Essayez :
+#      terraform apply -var 'contenu_tolere=autre valeur'  -> plan vide grâce à ignore_changes
+#    Retirez le bloc lifecycle et recommencez -> la ressource est remplacée.
+variable "contenu_tolere" {
+  type    = string
+  default = "valeur initiale\n"
+}
+
 resource "local_file" "tolere" {
   filename = "${path.module}/out/tolere.txt"
-  content  = "valeur initiale\n"
+  content  = var.contenu_tolere
 
   lifecycle {
     ignore_changes = [content]

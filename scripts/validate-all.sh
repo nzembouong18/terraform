@@ -34,8 +34,11 @@ CLOUD=(
   06-complements/21-kubernetes/solution
 )
 WITH_TESTS=(
+  04-expert/14-multi-region-providers/solution
+  05-projet-final/modules/application
   06-complements/19-azure/solution
   06-complements/20-gcp/solution
+  06-complements/21-kubernetes/solution
   03-avance/10-tests/solution
   04-expert/15-module-qualite/solution
   05-projet-final/modules/reseau
@@ -60,6 +63,19 @@ validate() {
 
 step "fmt + validate"
 for d in "${OFFLINE[@]}" "${CLOUD[@]}" "${OTHER_VALIDATE[@]}"; do validate "$d"; done
+
+step "extraits HCL des cours (syntaxe)"
+"$ROOT/scripts/check-snippets.sh"
+
+step "workflows YAML"
+if python3 -c 'import yaml' 2>/dev/null; then
+  for y in .github/workflows/ci.yml 03-avance/12-ci-cd/solution/terraform-pipeline.yml 03-avance/12-ci-cd/solution/.pre-commit-config.yaml; do
+    python3 -c 'import sys, yaml; yaml.safe_load(open(sys.argv[1]))' "$ROOT/$y"
+    ok "yaml  $y"
+  done
+else
+  echo "  (PyYAML absent : contrôle YAML ignoré)"
+fi
 $FAST && exit 0
 
 step "apply / idempotence / destroy (labs hors-ligne)"
@@ -91,6 +107,48 @@ step "lab 04 : moved (renommage sans destruction)"
   rm -rf "$tmp"
 )
 ok "moved  01-debutant/04-state"
+
+step "lab 11 : moved (renommage + déplacement dans un module) puis import"
+(
+  tmp=$(mktemp -d); cd "$tmp"
+  cat > main.tf <<'HCL'
+terraform {
+  required_providers {
+    random = { source = "hashicorp/random" }
+    local  = { source = "hashicorp/local" }
+  }
+}
+resource "random_pet" "a" {
+  length = 2
+}
+resource "local_file" "rapport" {
+  filename = "${path.root}/out/rapport.txt"
+  content  = random_pet.a.id
+}
+HCL
+  terraform init "${TF_FLAGS[@]}" >/dev/null && terraform apply -auto-approve "${TF_FLAGS[@]}" >/dev/null
+  rm -rf .terraform.lock.hcl
+  cp -r "$ROOT/03-avance/11-refactoring/solution/modules" . && cp "$ROOT/03-avance/11-refactoring/solution/main.tf" main.tf
+  terraform init "${TF_FLAGS[@]}" >/dev/null
+  out=$(terraform plan "${TF_FLAGS[@]}")
+  echo "$out" | grep -q "random_pet.a has moved to random_pet.principal"
+  echo "$out" | grep -q "local_file.rapport has moved to module.rapports.local_file.rapport"
+  echo "$out" | grep -q "Plan: 0 to add, 0 to change, 0 to destroy"
+  terraform destroy -auto-approve "${TF_FLAGS[@]}" >/dev/null
+  rm -rf "$tmp"
+  # import déclaratif d'un random_id existant
+  tmp=$(mktemp -d); cd "$tmp"
+  printf 'terraform {\n  required_providers {\n    random = { source = "hashicorp/random" }\n  }\n}\nresource "random_id" "test" {\n  byte_length = 4\n}\noutput "id" {\n  value = random_id.test.b64_url\n}\n' > main.tf
+  terraform init "${TF_FLAGS[@]}" >/dev/null && terraform apply -auto-approve "${TF_FLAGS[@]}" >/dev/null
+  id=$(terraform output -raw id); mkdir b && cd b
+  printf 'terraform {\n  required_providers {\n    random = { source = "hashicorp/random" }\n  }\n}\nimport {\n  to = random_id.test\n  id = "%s"\n}\nresource "random_id" "test" {\n  byte_length = 4\n}\n' "$id" > main.tf
+  terraform init "${TF_FLAGS[@]}" >/dev/null
+  terraform plan "${TF_FLAGS[@]}" | grep -q "Plan: 1 to import, 0 to add, 0 to change, 0 to destroy"
+  terraform apply -auto-approve "${TF_FLAGS[@]}" >/dev/null
+  terraform plan -detailed-exitcode "${TF_FLAGS[@]}" >/dev/null
+  rm -rf "$tmp"
+)
+ok "moved + import  lab 11"
 
 step "lab 07 : remote state entre deux stacks"
 (
@@ -139,7 +197,14 @@ done
 
 if command -v opa >/dev/null; then
   step "policy-as-code (OPA)"
-  (cd "$ROOT/04-expert/16-policy-as-code/solution" && opa test policy >/dev/null)
-  ok "opa test"
+  (
+    cd "$ROOT/04-expert/16-policy-as-code/solution"
+    opa test policy >/dev/null
+    ./check.sh fixtures/plan-conforme.json >/dev/null            # doit passer
+    if ./check.sh fixtures/plan-non-conforme.json >/dev/null; then # doit échouer
+      echo "check.sh aurait dû refuser plan-non-conforme.json" >&2; exit 1
+    fi
+  )
+  ok "opa test + check.sh (plan conforme accepté, non conforme refusé)"
 fi
 printf '\n\033[32mTout est vert.\033[0m\n'

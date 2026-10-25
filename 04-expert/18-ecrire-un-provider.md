@@ -46,7 +46,7 @@ export TF_LOG_PROVIDER=DEBUG            # seulement les logs des providers
 
 ## Développement local
 Dans `~/.terraformrc` :
-```hcl
+```text
 provider_installation {
   dev_overrides { "mon-org/mon-provider" = "/chemin/vers/bin" }
   direct {}

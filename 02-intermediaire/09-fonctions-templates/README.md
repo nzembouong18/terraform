@@ -13,7 +13,7 @@ Terraform fournit des fonctions intégrées (pas de fonctions utilisateur). Test
 | Hash/crypto | `md5`, `sha256`, `base64encode`, `uuid` (⚠️ change à chaque run) |
 
 ## `templatefile`
-```hcl
+```text
 templatefile("${path.module}/templates/nginx.conf.tftpl", { serveur = "app", ports = [80, 443] })
 ```
 Directives : `${ }` interpolation, `%{ for x in l ~} ... %{ endfor ~}`, `%{ if cond ~} ... %{ endif ~}` (le `~` retire les sauts de ligne).
@@ -43,7 +43,7 @@ On l'utilise en TDD léger : écrire l'expression dans la console, la valider, p
 
 ### Familles de fonctions, avec exemples
 **Chaînes**
-```hcl
+```text
 format("%s-%03d", "srv", 7)            # "srv-007"
 join(",", ["a","b"])                   # "a,b"      split(",", "a,b") → ["a","b"]
 replace("a.b.c", ".", "-")             # "a-b-c"
@@ -51,21 +51,21 @@ regex("^(\\w+)-(\\d+)$", "app-42")     # ["app", "42"]
 trimprefix("v1.2.0", "v")              # "1.2.0"
 ```
 **Collections**
-```hcl
+```text
 concat([1], [2, 3])                    # [1,2,3]          distinct([1,1,2]) → [1,2]
 slice(["a","b","c"], 0, 2)             # ["a","b"]        sort / reverse / compact
 setunion(["a"], ["b"])                 # ensemble         setsubtract / setintersection
 transpose({a=["x","y"]})               # { x=["a"], y=["a"] }
 ```
 **Nombres et dates**
-```hcl
+```text
 min(1,2)  max(3,4)  ceil(1.2)  floor(1.8)  abs(-3)  pow(2,8)
 timestamp()                            # instant courant (change à chaque plan !)
 timeadd("2025-01-01T00:00:00Z", "24h") # horodatage décalé
 formatdate("DD/MM/YYYY", "2025-03-15T10:00:00Z")   # "15/03/2025"
 ```
 **Robustesse (gestion des absences)**
-```hcl
+```text
 try(var.config.cache.ttl, 300)         # retombe sur 300 si le chemin n'existe pas
 can(regex("^[a-z]+$", var.nom))        # booléen : l'expression s'évalue-t-elle sans erreur ?
 coalesce("", null, "defaut")           # "defaut"  (ignore null ET "")
@@ -91,7 +91,7 @@ one([])                                # null       one(["x"]) → "x"
 Oublier `path.module` fait échouer un module dès qu'il est appelé depuis un autre dossier.
 
 ### `templatefile` avancé
-```hcl
+```text
 # templates/inventaire.tftpl
 %{ for nom, srv in serveurs ~}
 [${nom}]
@@ -102,7 +102,7 @@ ${srv.ip} ansible_user=${srv.user}
 ${monitoring_host}
 %{ endif ~}
 ```
-```hcl
+```text
 templatefile("${path.module}/templates/inventaire.tftpl", {
   serveurs        = { web = { ip = "10.0.1.10", user = "ubuntu" } }
   monitoring      = true
