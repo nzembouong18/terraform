@@ -79,7 +79,7 @@ one([])                                # null       one(["x"]) → "x"
 | `jsonencode(obj)` / `jsondecode(str)` | politiques IAM, configurations JSON |
 | `yamlencode(obj)` / `yamldecode(str)` | manifestes, fichiers de config |
 | `base64encode` / `base64decode` | `user_data`, secrets Kubernetes |
-| `file("chemin")` / `filebase64()` | lire un fichier **à l'init du plan** |
+| `file("chemin")` / `filebase64()` | lire un fichier qui existe **déjà au moment du plan** (pas un fichier créé pendant l'apply) |
 | `csvdecode(file(...))` | piloter `for_each` depuis un CSV |
 
 Écrivez les politiques IAM avec `jsonencode({...})` plutôt qu'avec un heredoc JSON : Terraform valide la syntaxe, formate et permet d'insérer des références proprement.

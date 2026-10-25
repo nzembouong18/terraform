@@ -48,7 +48,7 @@ Pendant `plan`/`apply`, le backend pose un verrou pour éviter deux écritures c
 4. **Synchronisation d'équipe** : un backend distant partage cet état et le verrouille.
 
 ### Anatomie du fichier `terraform.tfstate`
-```json
+```jsonc
 {
   "version": 4,
   "terraform_version": "1.9.8",
@@ -72,7 +72,7 @@ code ──► plan ◄── state ◄── (API : lire l'existant)
            ▼
          apply ──► appels d'API ──► nouveau state (serial + 1)
 ```
-- Depuis Terraform 0.15.4, `plan` et `apply` **rafraîchissent le state en mémoire** avant de comparer ; le mode `-refresh-only` n'applique **que** la mise à jour du state (sans toucher à l'infra) et remplace l'ancienne commande `terraform refresh`.
+- `plan` et `apply` **rafraîchissent le state en mémoire** avant de comparer. Le mode `-refresh-only` (depuis Terraform 0.15.4) n'applique **que** la mise à jour du state (sans toucher à l'infra) : il remplace l'ancienne commande `terraform refresh`, désormais déconseillée.
 - Si une ressource a été supprimée manuellement, le refresh la retire du state et le plan proposera de la **recréer**.
 - Si un attribut a été modifié manuellement, le plan proposera de le **remettre** à la valeur du code (c'est le principe de la détection de dérive).
 
@@ -106,7 +106,7 @@ Tous les attributs de toutes les ressources, **y compris** les mots de passe gé
 
 ### Commandes d'inspection utiles
 ```bash
-terraform state list 'aws_instance.*'     # filtrer par motif
+terraform state list aws_instance.web      # filtrer par adresse (ou par module : module.reseau)
 terraform state show 'aws_instance.web["a"]'
 terraform show -json | jq '.values.root_module.resources[] | {address, type}'
 terraform providers                       # providers et leurs sources requises

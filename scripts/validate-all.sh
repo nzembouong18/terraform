@@ -67,6 +67,9 @@ for d in "${OFFLINE[@]}" "${CLOUD[@]}" "${OTHER_VALIDATE[@]}"; do validate "$d";
 step "extraits HCL des cours (syntaxe)"
 "$ROOT/scripts/check-snippets.sh"
 
+step "liens Markdown"
+"$ROOT/scripts/check-links.sh"
+
 step "workflows YAML"
 if python3 -c 'import yaml' 2>/dev/null; then
   for y in .github/workflows/ci.yml 03-avance/12-ci-cd/solution/terraform-pipeline.yml 03-avance/12-ci-cd/solution/.pre-commit-config.yaml; do

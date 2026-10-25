@@ -16,7 +16,7 @@ Règles : un état **par couche × environnement** ; les couches basses ne dépe
 |----------|----------|-------|
 | Dossiers + modules | duplication minimale de « glue » | petites/moyennes équipes |
 | **Terragrunt** | génère backend/providers, `dependency`, `run-all` | beaucoup d'états/comptes |
-| **HCP Terraform Stacks** | déploiements multi-états/régions déclaratifs (`.tfstacks.hcl`) | écosystème HCP |
+| **HCP Terraform Stacks** | déploiements multi-états/régions déclaratifs (`*.tfcomponent.hcl` + `*.tfdeploy.hcl`) | écosystème HCP |
 | Workspaces HCP + variable sets | unité = workspace | gouvernance centralisée |
 | **OpenTofu** | fork open source compatible (chiffrement du state natif, `for_each` sur providers) | contraintes de licence |
 
@@ -82,7 +82,7 @@ Le **contrat** entre deux couches = un jeu d'outputs documenté et versionné. M
 
 ### Orchestration : le problème du « glue code »
 Quand on a 40 états, on répète : backend, providers, appels de modules, variables communes. Solutions :
-- **Terragrunt** : un `terragrunt.hcl` racine génère backend et provider ; `dependency` déclare l'ordre ; `run-all plan|apply` exécute l'ensemble.
+- **Terragrunt** : un `terragrunt.hcl` racine génère backend et provider ; `dependency` déclare l'ordre ; `run-all plan|apply` (commande `run --all` dans les versions récentes) exécute l'ensemble.
   ```hcl
   # terragrunt.hcl racine
   remote_state {
