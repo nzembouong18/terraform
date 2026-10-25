@@ -46,7 +46,7 @@ export TF_LOG_PROVIDER=DEBUG            # seulement les logs des providers
 
 ## Développement local
 Dans `~/.terraformrc` :
-```hcl
+```text
 provider_installation {
   dev_overrides { "mon-org/mon-provider" = "/chemin/vers/bin" }
   direct {}
@@ -56,7 +56,7 @@ provider_installation {
 ## Comprendre en profondeur
 
 ### Le protocole de plugin
-Terraform lance le provider comme un **processus enfant** et dialogue avec lui en **gRPC** sur un socket local (protocole `tfplugin6`, anciennement 5). À l'ouverture, la poignée de main négocie la version du protocole et un jeton. Le provider reste actif pendant toute l'opération, puis est arrêté. Conséquences : un provider est un binaire autonome (Go le plus souvent), les erreurs de provider remontent comme des diagnostics, un crash apparaît comme *« The plugin encountered an error »* avec la trace dans les logs `TRACE`.
+Terraform lance le provider comme un **processus enfant** et dialogue avec lui en **gRPC** sur un socket local (protocole `tfplugin6` ; `tfplugin5` pour les providers écrits avec le SDKv2). À l'ouverture, la poignée de main négocie la version du protocole et un jeton. Le provider reste actif pendant toute l'opération, puis est arrêté. Conséquences : un provider est un binaire autonome (Go le plus souvent), les erreurs de provider remontent comme des diagnostics, un crash apparaît comme *« The plugin encountered an error »* avec la trace dans les logs `TRACE`.
 
 ### Les types d'objets exposés par un provider
 | Élément | Rôle | Opérations |

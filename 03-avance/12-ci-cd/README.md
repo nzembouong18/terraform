@@ -72,6 +72,7 @@ La *trust policy* du rôle restreint **qui** peut l'assumer : dépôt, branche, 
 ### Détection de dérive
 ```yaml
 on: { schedule: [ { cron: "0 6 * * 1-5" } ] }
+permissions: { id-token: write, contents: read, issues: write }   # OIDC + création d'issue
 steps:
   # `outputs.exitcode` n'existe que si hashicorp/setup-terraform tourne avec terraform_wrapper: true (défaut)
   - run: terraform plan -detailed-exitcode -input=false
@@ -79,6 +80,8 @@ steps:
     continue-on-error: true
   - if: steps.plan.outcome == 'failure' && steps.plan.outputs.exitcode == '2'
     run: gh issue create --title "Dérive détectée" --body "Voir le run $GITHUB_RUN_ID"
+    env:
+      GH_TOKEN: ${{ github.token }}      # gh a besoin d'un jeton
 ```
 Une dérive est un **signal** : soit une intervention manuelle non autorisée, soit un attribut géré ailleurs (autoscaling) qu'il faut ignorer explicitement.
 
@@ -118,7 +121,7 @@ Exécution distante (runs), state managé, RBAC, *variable sets*, politiques (Se
 1. Lisez [`solution/terraform-pipeline.yml`](solution/terraform-pipeline.yml). Identifiez : où est l'OIDC ? où est l'approbation ? comment évite-t-on 2 apply simultanés ?
 2. Ouvrez la CI **de ce dépôt** : [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). Que vérifie-t-elle ?
 3. Installez `pre-commit` et le fichier `.pre-commit-config.yaml` : committez un fichier mal formaté, observez l'échec.
-4. Écrivez un workflow cron hebdomadaire de détection de dérive qui ouvre une *issue* si `plan -detailed-exitcode` retourne `2`.
+4. Écrivez un workflow planifié (cron) de détection de dérive qui ouvre une *issue* si `plan -detailed-exitcode` retourne `2`.
 5. Défi : configurez un rôle IAM AWS avec *trust policy* OIDC limitée à `repo:<org>/<repo>:ref:refs/heads/main` pour l'apply, et à `pull_request` pour le plan (lecture seule).
 
 ## Trust policy OIDC (exemple)

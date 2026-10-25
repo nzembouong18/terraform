@@ -132,9 +132,9 @@ Points de vigilance :
 
 1. Dans `solution/main.tf`, tracez le graphe : `terraform graph`. Quelles ressources sont parallélisables ?
 2. Passez `prevent_destroy = true` sur `db_conf` puis `terraform destroy`. Lisez l'erreur. Remettez `false`.
-3. Modifiez à la main `out/tolere.txt` : le plan voit-il un changement ? Pourquoi (`ignore_changes`) ?
+3. `terraform apply -var 'contenu_tolere=autre valeur'` : le plan est-il vide ? Pourquoi (`ignore_changes`) ? Retirez le bloc `lifecycle` de `local_file.tolere` et relancez : que devient la ressource ? **Piège :** `ignore_changes` ignore les changements de *configuration* (code ou variables) ; il ne masque pas une modification faite à la main sur le fichier — pour `local_file`, le provider voit alors un fichier différent et annonce `will be created` (voir le [lab 22, scénario B](../../06-complements/22-debug/README.md)).
 4. Lancez `terraform apply -var taille_mot_de_passe=8` : quelle erreur ? D'où vient-elle (precondition) ?
-5. Changez `random_password` (`-replace=random_password.db`) : quelle ressource est **aussi** remplacée grâce à `replace_triggered_by` ?
+5. Forcez le remplacement du mot de passe (`terraform plan -replace=random_password.db`) : le plan annonce `3 to add, 3 to destroy`. Quelles ressources sont remplacées, et laquelle l'est **uniquement** grâce à `replace_triggered_by` (indice : `db_conf` est remplacé parce que son *contenu* change) ?
 6. Défi : ajoutez une `postcondition` sur `data.local_file.readme_lu` qui exige que le contenu ne soit pas vide.
 
 ## Pièges

@@ -20,14 +20,26 @@ terraform force-unlock ID                 # lever un verrou resté coincé (avec
 
 ### Refactoring déclaratif (préféré à `state mv`)
 ```hcl
-moved   { from = random_pet.ancien  to = random_pet.nouveau }       # ≥ 1.1
-import  { to = aws_s3_bucket.b  id = "mon-bucket" }                 # ≥ 1.5
-removed { from = aws_s3_bucket.b  lifecycle { destroy = false } }   # ≥ 1.7
+moved {       # ≥ 1.1
+  from = random_pet.ancien
+  to = random_pet.nouveau
+}
+import {                 # ≥ 1.5
+  to = aws_s3_bucket.b
+  id = "mon-bucket"
+}
+removed {   # ≥ 1.7
+  from = aws_s3_bucket.b
+
+  lifecycle {
+    destroy = false
+  }
+}
 ```
 Avantage : relu en code review, rejouable sur **tous** les environnements.
 
 ### Verrouillage (lock)
-Pendant `plan`/`apply`, le backend pose un verrou pour éviter deux écritures concurrentes. Un backend local verrouille via un fichier ; les backends distants via leur mécanisme propre.
+Pendant `plan`/`apply`, le backend pose un verrou pour éviter deux écritures concurrentes. Un backend local verrouille via un verrou système sur le fichier (libéré automatiquement si le processus meurt) ; les backends distants via leur mécanisme propre.
 
 ### À quoi sert (vraiment) le state ?
 1. **Mapping** : lier `aws_s3_bucket.logs` (nom dans le code) à l'identifiant réel (`acme-logs-prod`). Sans cela, Terraform ne saurait pas quelle ressource correspond à quel bloc.
@@ -36,7 +48,7 @@ Pendant `plan`/`apply`, le backend pose un verrou pour éviter deux écritures c
 4. **Synchronisation d'équipe** : un backend distant partage cet état et le verrouille.
 
 ### Anatomie du fichier `terraform.tfstate`
-```json
+```jsonc
 {
   "version": 4,
   "terraform_version": "1.9.8",
@@ -60,7 +72,7 @@ code ──► plan ◄── state ◄── (API : lire l'existant)
            ▼
          apply ──► appels d'API ──► nouveau state (serial + 1)
 ```
-- Depuis Terraform 0.15.4, `plan` et `apply` **rafraîchissent le state en mémoire** avant de comparer ; le mode `-refresh-only` n'applique **que** la mise à jour du state (sans toucher à l'infra) et remplace l'ancienne commande `terraform refresh`.
+- `plan` et `apply` **rafraîchissent le state en mémoire** avant de comparer. Le mode `-refresh-only` (depuis Terraform 0.15.4) n'applique **que** la mise à jour du state (sans toucher à l'infra) : il remplace l'ancienne commande `terraform refresh`, désormais déconseillée.
 - Si une ressource a été supprimée manuellement, le refresh la retire du state et le plan proposera de la **recréer**.
 - Si un attribut a été modifié manuellement, le plan proposera de le **remettre** à la valeur du code (c'est le principe de la détection de dérive).
 
@@ -86,7 +98,7 @@ Tous les attributs de toutes les ressources, **y compris** les mots de passe gé
 ### Récupération après incident
 | Incident | Réponse |
 |----------|---------|
-| Verrou resté coincé (job CI tué) | `terraform force-unlock <ID>` **après** vérification qu'aucun apply n'est en cours |
+| Verrou resté coincé après un job CI tué (backend **distant** ; le backend local utilise un verrou système libéré dès la mort du processus) | `terraform force-unlock <ID>` **après** vérification qu'aucun apply n'est en cours |
 | State corrompu / écrasé | restaurer la version précédente du backend (versioning S3, `state push`) |
 | State perdu mais infra existante | recréer la config et **réimporter** chaque ressource (`import`) |
 | Ressource supprimée du state par erreur | `terraform import` pour la reprendre |
@@ -94,7 +106,7 @@ Tous les attributs de toutes les ressources, **y compris** les mots de passe gé
 
 ### Commandes d'inspection utiles
 ```bash
-terraform state list 'aws_instance.*'     # filtrer par motif
+terraform state list aws_instance.web      # filtrer par adresse (ou par module : module.reseau)
 terraform state show 'aws_instance.web["a"]'
 terraform show -json | jq '.values.root_module.resources[] | {address, type}'
 terraform providers                       # providers et leurs sources requises

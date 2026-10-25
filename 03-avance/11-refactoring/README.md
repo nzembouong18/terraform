@@ -13,9 +13,18 @@
 
 ## `moved`
 ```hcl
-moved { from = aws_instance.web          to = aws_instance.app }
-moved { from = aws_instance.app          to = module.compute.aws_instance.app }
-moved { from = aws_subnet.s[0]           to = aws_subnet.s["a"] }     # count -> for_each
+moved {
+  from = aws_instance.web
+  to = aws_instance.app
+}
+moved {
+  from = aws_instance.app
+  to = module.compute.aws_instance.app
+}
+moved {     # count -> for_each
+  from = aws_subnet.s[0]
+  to = aws_subnet.s["a"]
+}
 ```
 Gardez les `moved` quelques versions pour que **tous** les environnements migrent, puis supprimez-les.
 
@@ -58,18 +67,39 @@ Le code d'infrastructure vieillit : noms hérités, ressources plates devenues m
 ### Les cas de `moved`
 ```hcl
 # 1. renommer
-moved { from = aws_instance.web  to = aws_instance.app }
+moved {
+  from = aws_instance.web
+  to = aws_instance.app
+}
 # 2. entrer dans un module
-moved { from = aws_s3_bucket.logs  to = module.stockage.aws_s3_bucket.logs }
+moved {
+  from = aws_s3_bucket.logs
+  to = module.stockage.aws_s3_bucket.logs
+}
 # 3. sortir d'un module
-moved { from = module.ancien.aws_vpc.main  to = aws_vpc.main }
+moved {
+  from = module.ancien.aws_vpc.main
+  to = aws_vpc.main
+}
 # 4. renommer un module
-moved { from = module.web  to = module.frontend }
+moved {
+  from = module.web
+  to = module.frontend
+}
 # 5. count → for_each
-moved { from = aws_subnet.s[0]  to = aws_subnet.s["a"] }
-moved { from = aws_subnet.s[1]  to = aws_subnet.s["b"] }
+moved {
+  from = aws_subnet.s[0]
+  to = aws_subnet.s["a"]
+}
+moved {
+  from = aws_subnet.s[1]
+  to = aws_subnet.s["b"]
+}
 # 6. ressource unique → ressource avec count
-moved { from = aws_instance.srv  to = aws_instance.srv[0] }
+moved {
+  from = aws_instance.srv
+  to = aws_instance.srv[0]
+}
 ```
 Un `moved` placé **dans un module publié** protège tous ses consommateurs lors d'un renommage interne : c'est la manière de livrer un renommage en version MINOR.
 
@@ -78,7 +108,10 @@ Trois approches, de la plus moderne à la plus ancienne :
 
 1. **Bloc `import` + génération** (≥ 1.5) :
    ```hcl
-   import { to = aws_s3_bucket.legacy  id = "mon-vieux-bucket" }
+   import {
+     to = aws_s3_bucket.legacy
+     id = "mon-vieux-bucket"
+   }
    ```
    `terraform plan -generate-config-out=generated.tf` produit le HCL. Le code généré est **verbeux** (tous les attributs, y compris les valeurs par défaut) : nettoyez-le.
 2. **Bloc `import` + code écrit à la main** : plus propre, vous contrôlez le résultat.
@@ -137,8 +170,8 @@ Toujours faire une copie du state avant. En équipe, préférez les blocs décla
 ## Exercices
 1. Lisez `solution/main.tf`. Reproduisez le scénario de test de [`scripts/validate-all.sh`](../../scripts/validate-all.sh) : créez la version « avant » (`random_pet.a` + `local_file.rapport` à la racine), `apply`, puis passez à la version « après » : le plan annonce **2 déplacements, 0 destruction**.
 2. Tentez la même chose **sans** les `moved` : qu'annonce le plan ?
-3. **Import** : créez `random_id.test` dans un dossier A (`byte_length = 4`), notez `terraform output`/`state show` pour son id ; dans un dossier B vide, déclarez la ressource + un bloc `import`, puis `plan`.
-4. Avec `-generate-config-out`, importez un fichier ou une ressource de votre choix et nettoyez la config générée.
+3. **Import** : dans un dossier A, créez `random_id.test` (`byte_length = 4`) avec un `output` de `random_id.test.b64_url` ; notez la valeur (`terraform output -raw ...`). Dans un dossier B vide, déclarez la même ressource + un bloc `import { to = random_id.test  id = "<valeur>" }` (écrit sur plusieurs lignes), puis `plan` : `1 to import, 0 to add`. Appliquez, relancez `plan` : `No changes`.
+4. Dans un dossier C, écrivez **seulement** le bloc `import` (vers `random_id.gen`) et lancez `terraform plan -generate-config-out=generated.tf` : Terraform écrit la ressource dans `generated.tf`. Relisez-la, supprimez les attributs inutiles (`keepers = null`, `prefix = null`…), puis vérifiez que `plan` annonce 0 changement.
 5. Passez un `count = 3` en `for_each` avec des `moved` (de `[0]` vers `["a"]`) sans destruction.
 6. Défi (cloud) : adoptez un bucket S3 créé à la main dans un module du [module 15](../../04-expert/15-module-qualite/README.md).
 

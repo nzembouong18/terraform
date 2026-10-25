@@ -131,7 +131,7 @@ Bonne pratique : `default` pour ce qui est **raisonnable partout**, un fichier `
 La vraie protection passe par un **backend chiffré**, un accès restreint au state, et — pour les secrets — les valeurs **éphémères** (module 13).
 
 ### Expressions : tour d'horizon
-```hcl
+```text
 "${var.a}-${var.b}"                       # interpolation
 var.prod ? 3 : 1                          # opérateur ternaire
 var.liste[0]       var.map["cle"]        # accès index / clé

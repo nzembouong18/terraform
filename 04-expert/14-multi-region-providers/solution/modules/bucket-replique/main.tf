@@ -95,9 +95,9 @@ resource "aws_s3_bucket_replication_configuration" "this" {
 }
 
 output "bucket_source" {
-  value = aws_s3_bucket.source.id
+  value = aws_s3_bucket.source.bucket
 }
 
 output "bucket_replica" {
-  value = aws_s3_bucket.replica.id
+  value = aws_s3_bucket.replica.bucket
 }

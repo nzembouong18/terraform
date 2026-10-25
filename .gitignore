@@ -19,4 +19,9 @@ secrets.tfvars
 **/out/
 **/generated/
 .DS_Store
+# Dans un vrai projet, COMMITEZ .terraform.lock.hcl. Ici il est ignoré : les labs sont validés sur
+# plusieurs plateformes (poste, CI) et un lock file généré sur l'une n'a pas les hash des autres.
 .terraform.lock.hcl
+
+# Sorties des tests d'intégration
+**/out-test/

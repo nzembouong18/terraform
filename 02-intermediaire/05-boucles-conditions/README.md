@@ -10,14 +10,22 @@
 | Usage idéal | 0 ou 1 (condition) | collections d'objets distincts |
 
 ```hcl
-resource "x" "cond"  { count = var.actif ? 1 : 0 }          # pattern « if »
-resource "x" "multi" { for_each = var.equipes  # each.key / each.value }
-resource "x" "set"   { for_each = toset(var.liste) }
+resource "x" "cond" {
+  count = var.actif ? 1 : 0          # pattern « if »
+}
+
+resource "x" "multi" {
+  for_each = var.equipes             # each.key / each.value
+}
+
+resource "x" "set" {
+  for_each = toset(var.liste)
+}
 ```
 > Les clés de `for_each` doivent être **connues au plan** (pas de valeur « known after apply » comme clé).
 
 ## Expressions `for`
-```hcl
+```text
 [for s in var.liste : upper(s)]                       # liste -> liste
 { for k, v in var.map : k => v.port }                 # map -> map
 { for s in var.liste : s.nom => s }                   # liste -> map indexée

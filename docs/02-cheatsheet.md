@@ -18,7 +18,9 @@ terraform test [-filter=f] [-verbose]       terraform login|logout
 ```
 
 ## Blocs
-```hcl
+> Notation **condensée** pour s'y retrouver d'un coup d'œil : en vrai HCL, un bloc sur une seule ligne n'accepte qu'**un seul** argument — sinon une ligne par argument (voir les modules).
+
+```text
 terraform { required_version = "~> 1.9"  required_providers { aws = { source = "hashicorp/aws" version = "~> 5.0" } }  backend "s3" {} }
 provider "aws" { region = "eu-west-3"  alias = "x" }
 variable "v" { type = string  default = "a"  description = ""  sensitive = false  nullable = true  validation {...} }

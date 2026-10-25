@@ -49,7 +49,7 @@ module racine ──variables──► module enfant ──outputs──► modu
 ```
 ```hcl
 # modules/reseau/outputs.tf
-output "subnet_ids" { value = [for s in aws_subnet.privé : s.id] }
+output "subnet_ids" { value = [for s in aws_subnet.prive : s.id] }
 # racine
 module "reseau"     { source = "./modules/reseau" }
 module "application" {

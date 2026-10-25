@@ -11,7 +11,10 @@
 
 ### Valeurs éphémères (Terraform ≥ 1.10) et write-only (≥ 1.11)
 ```hcl
-variable "db_password" { type = string  ephemeral = true }       # jamais écrit dans state/plan
+variable "db_password" {       # jamais écrit dans state/plan
+  type = string
+  ephemeral = true
+}
 ephemeral "aws_secretsmanager_secret_version" "db" { secret_id = "prod/db" }
 resource "aws_db_instance" "main" {
   password_wo         = ephemeral.aws_secretsmanager_secret_version.db.secret_string
@@ -77,7 +80,12 @@ resource "aws_s3_bucket_public_access_block" "b" {
 }
 resource "aws_s3_bucket_server_side_encryption_configuration" "b" {
   bucket = aws_s3_bucket.b.id
-  rule { apply_server_side_encryption_by_default { sse_algorithm = "aws:kms" } }
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "aws:kms"
+    }
+  }
 }
 ```
 Check-list générale : chiffrement au repos et en transit, journalisation activée, accès public interdit, **groupes de sécurité** limités (pas de `0.0.0.0/0` sur SSH/RDP), **IAM** sans `*:*`, sauvegardes, versioning, protection contre la suppression.

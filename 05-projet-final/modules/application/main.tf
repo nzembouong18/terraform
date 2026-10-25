@@ -129,7 +129,7 @@ resource "aws_lb_listener" "http" {
 
 resource "aws_launch_template" "this" {
   name_prefix            = "${var.nom}-"
-  image_id               = data.aws_ssm_parameter.ami.value
+  image_id               = data.aws_ssm_parameter.ami.insecure_value # un ID d'AMI n'est pas un secret ; .value le rendrait « sensitive » et masquerait les diffs
   instance_type          = var.type_instance
   vpc_security_group_ids = [aws_security_group.instances.id]
 

@@ -41,7 +41,7 @@ Chaque module = **cours + exercices + `solution/` exécutable**. Planning et gri
 
 ## ✅ Vérifier que tout fonctionne
 ```bash
-./scripts/validate-all.sh --fast   # fmt + validate de tous les labs
+./scripts/validate-all.sh --fast   # fmt + validate de tous les labs, syntaxe des extraits HCL des cours, YAML
 ./scripts/validate-all.sh          # + apply/idempotence/destroy hors-ligne, terraform test, OPA
 ```
 La CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) exécute ce script à chaque push.
